@@ -8,6 +8,7 @@ namespace Core.Data
 {
     public static class WordManager
     {
+        public static int VocabularyCount { get { return WordIdMap.Count; } }
         private static Dictionary<string, int> WordIdMap = new Dictionary<string,int>();
         private static Dictionary<int, string> IdWordMap = new Dictionary<int, string>();
 
@@ -44,19 +45,22 @@ namespace Core.Data
     public class Document
     {
         public readonly string Id;
-        public readonly Dictionary<int, int> BagOfWords;
+        public readonly Dictionary<int, int> BagOfWords = new Dictionary<int,int>();
+        public readonly List<int> WordSequence = new List<int>();
 
-        public Document(string id, string content)
+        public Document(string id, string content, params char[] delimiter)
         {
             Id = id;
-            BagOfWords = new Dictionary<int,int>();
-            foreach (var word in content.ToLower().Split())
+            foreach (var word in content.ToLower().Split(delimiter))
             {
                 var wordId = word.ToWordId();
                 if (!BagOfWords.ContainsKey(wordId))
                     BagOfWords.Add(wordId, 0);
                 BagOfWords[wordId]++;
+
+                WordSequence.Add(wordId);
             }
         }
     }
+
 }
