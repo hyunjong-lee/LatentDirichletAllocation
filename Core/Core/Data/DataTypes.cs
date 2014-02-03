@@ -47,6 +47,7 @@ namespace Core.Data
         public readonly string Id;
         public readonly Dictionary<int, int> BagOfWords = new Dictionary<int,int>();
         public readonly List<int> WordSequence = new List<int>();
+        public int Count { get { return WordSequence.Count; } }
 
         public Document(string id, string content, params char[] delimiter)
         {

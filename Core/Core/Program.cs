@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Core.Helper;
+using Core.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,6 +12,7 @@ namespace Core
     {
         static void Main(string[] args)
         {
+            LogHelper.Log("test message");
         }
     }
 }

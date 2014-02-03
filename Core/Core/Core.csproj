@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\DataTypes.cs" />
+    <Compile Include="Helper\LogHelper.cs" />
     <Compile Include="Helper\ModelHelper.cs" />
     <Compile Include="Model\LDA.cs" />
     <Compile Include="Program.cs" />
