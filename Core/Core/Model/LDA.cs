@@ -11,6 +11,7 @@ namespace Core.Model
     public class Parameter
     {
         // Bag of words parameters
+        public string CorpusPath;
         public List<Document> DocumentList = new List<Document>();
         public int VocabularyCount { get { return WordManager.VocabularyCount; } }
         public int DocumentCount { get { return DocumentList.Count; } }
@@ -25,7 +26,7 @@ namespace Core.Model
         public int TotalIterationStep;
 
         // model export path
-        public string ModelExportPath;
+        public string ModelPath;
     }
 
     public class LDAModel
@@ -54,22 +55,22 @@ namespace Core.Model
             // Z
             Z = new List<List<int>>(docCount);
             foreach (var document in Parameter.DocumentList.Select((document, idx) => new { Index = idx, WordCount = document.Count }))
-                Z[document.Index] = new List<int>(document.WordCount);
+                Z.Add(Enumerable.Repeat(0, document.WordCount).ToList());
 
             // NW
-            NW.Initialize(vocaCount, topicCount);
+            NW = ModelHelper.InitializeMatrix<int>(vocaCount, topicCount);
 
             // ND
-            ND.Initialize(docCount, topicCount);
+            ND = ModelHelper.InitializeMatrix<int>(docCount, topicCount);
 
             // NWCount
-            NWCount = new List<int>(topicCount);
+            NWCount = ModelHelper.InitializeList<int>(topicCount);
 
             // Theta
-            Theta.Initialize(docCount, topicCount);
+            Theta = ModelHelper.InitializeMatrix<double>(docCount, topicCount);
 
             // Phi
-            Phi.Initialize(topicCount, vocaCount);
+            Phi = ModelHelper.InitializeMatrix<double>(topicCount, vocaCount);
 
             #endregion
         }
@@ -80,6 +81,8 @@ namespace Core.Model
     {
         public Parameter Parameter { get { return _parameter; } }
         private Parameter _parameter;
+
+        public LDAModel LDAModel { get { return _ldaModel; } }
         private LDAModel _ldaModel;
 
         public LDA(Parameter parameters)
@@ -90,34 +93,30 @@ namespace Core.Model
 
         public void Inference()
         {
-            LogHelper.Log("Start to initialize model");
+            LogHelper.Log("initialize model");
             Initialize();
-            LogHelper.Log("Initialize model finished");
 
             LogHelper.Log("Start inference {0}", _parameter.TotalIterationStep);
             foreach (var step in Enumerable.Range(0, _parameter.TotalIterationStep))
             {
-                LogHelper.Log("Iteration step {0} stared", step);
+                LogHelper.Log("Iteration step {0}", step);
                 Inference(step);
-                LogHelper.Log("Iteration step {0} finished", step);
             }
             LogHelper.Log("Finish inference {0}", _parameter.TotalIterationStep);
 
-            LogHelper.Log("Start to compute theta paramter");
+            LogHelper.Log("compute theta");
             _ldaModel.ComputeTheta(this);
-            LogHelper.Log("Compute theta paramter finished");
             
-            LogHelper.Log("Start to compute phi paramter");
+            LogHelper.Log("compute phi");
             _ldaModel.ComputePhi(this);
-            LogHelper.Log("Compute phi paramter finished");
 
-            LogHelper.Log("Start to export LDA result to {0}", _parameter.ModelExportPath);
-            this.Export(_parameter.ModelExportPath);
-            LogHelper.Log("Export LDA result to {0} finished", _parameter.ModelExportPath);
+            LogHelper.Log("export LDA model to {0}", _parameter.ModelPath);
+            this.Export();
         }
 
         private void Initialize()
         {
+            // random topic assignment for each word in documents
             var random = new Random(DateTime.Now.Millisecond);
             foreach (var docIdx in Enumerable.Range(0, _ldaModel.Z.Count))
             {
@@ -164,7 +163,7 @@ namespace Core.Model
             var VBeta = vocaCount * beta;
             var KAlpha = topicCount * alpha;
 
-            var topicDist = new List<double>(topicCount);
+            var topicDist = ModelHelper.InitializeList<double>(topicCount);
             foreach (var topicId in Enumerable.Range(0, topicCount))
             {
                 topicDist[topicId] =

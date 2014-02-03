@@ -40,6 +40,12 @@ namespace Core.Data
 
             return null;
         }
+
+        public static IEnumerable<KeyValuePair<string, int>> WordIterator()
+        {
+            foreach (var elem in WordIdMap)
+                yield return elem;
+        }
     }
 
     public class Document

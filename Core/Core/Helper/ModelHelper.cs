@@ -1,7 +1,10 @@
-﻿using Core.Model;
+﻿using Core.Data;
+using Core.Model;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,19 +12,67 @@ namespace Core.Helper
 {
     public static class ModelHelper
     {
-        public static void Export(this LDA lda, string directory)
+        public static void Export(this LDA lda)
         {
+            var executionPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var modelPath = Path.Combine(executionPath, lda.Parameter.ModelPath);
+            if (!Directory.Exists(modelPath)) Directory.CreateDirectory(modelPath);
+
+            // export Parameters
+            using (var writer = new StreamWriter(Path.Combine(modelPath, "Parameters.dat")))
+            {
+                writer.WriteLine(lda.Parameter.Alpha);
+                writer.WriteLine(lda.Parameter.Beta);
+                writer.WriteLine(lda.Parameter.TopicCount);
+                writer.WriteLine(lda.Parameter.CurrentIterationStep);
+                writer.WriteLine(lda.Parameter.TotalIterationStep);
+                writer.WriteLine(lda.Parameter.VocabularyCount);
+                writer.WriteLine(lda.Parameter.DocumentCount);
+            }
+
+            // export Vocabulary
+            using (var writer = new StreamWriter(Path.Combine(modelPath, "Voca.dat")))
+            {
+                foreach(var wordIdPair in WordManager.WordIterator())
+                {
+                    writer.WriteLine("{0}:{1}", wordIdPair.Key, wordIdPair.Value);
+                }
+            }
+
+            // export Theta
+            using (var writer = new StreamWriter(Path.Combine(modelPath, "Theta.dat")))
+            {
+                foreach (var values in lda.LDAModel.Theta)
+                {
+                    writer.WriteLine(string.Join(",", values));
+                }
+            }
+
+            // export Phi
+            using (var writer = new StreamWriter(Path.Combine(modelPath, "Phi.dat")))
+            {
+                foreach (var values in lda.LDAModel.Phi)
+                {
+                    writer.WriteLine(string.Join(",", values));
+                }
+            }
         }
 
-        public static void Import(this LDA lda, string directory)
+        public static List<T> InitializeList<T>(int count)
         {
+            var data = new List<T>(count);
+            data.AddRange(Enumerable.Repeat<T>(default(T), count));
+
+            return data;
         }
 
-        public static void Initialize<T>(this List<List<T>> data, int row, int col)
+        public static List<List<T>> InitializeMatrix<T>(int row, int col)
         {
-            data = new List<List<T>>(row);
+            var data = new List<List<T>>(row);
             foreach (var idx in Enumerable.Range(0, row))
-                data[idx] = new List<T>(col);
+                data.Add(Enumerable.Repeat<T>(default(T), col).ToList());
+
+            return data;
         }
 
         public static void ComputeTheta(this LDAModel model, LDA lda)
