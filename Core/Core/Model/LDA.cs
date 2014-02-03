@@ -85,7 +85,6 @@ namespace Core.Model
         public LDA(Parameter parameters)
         {
             _parameter = parameters;
-
             _ldaModel = new LDAModel(_parameter);
         }
 
@@ -119,6 +118,18 @@ namespace Core.Model
 
         private void Initialize()
         {
+            var random = new Random(DateTime.Now.Millisecond);
+            foreach (var docIdx in Enumerable.Range(0, _ldaModel.Z.Count))
+            {
+                foreach (var wordIdx in Enumerable.Range(0, _ldaModel.Z[docIdx].Count))
+                {
+                    var topic = random.Next(0, _parameter.TopicCount);
+                    _ldaModel.Z[docIdx][wordIdx] = topic;
+                    _ldaModel.NW[_parameter.DocumentList[docIdx].WordSequence[wordIdx]][topic]++;
+                    _ldaModel.ND[docIdx][topic]++;
+                    _ldaModel.NWCount[topic]++;
+                }
+            }
         }
 
         private void Inference(int step)
