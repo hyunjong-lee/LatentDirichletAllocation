@@ -3,6 +3,7 @@ using Core.Model;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -12,48 +13,57 @@ namespace Core.Helper
 {
     public static class ModelHelper
     {
-        public static void Export(this LDA lda)
+        public static T Import<T>(this string modelPath) where T : class
+        {
+            using (var reader = new StreamReader(Path.Combine(modelPath, typeof(T).Name + ".bin")))
+            {
+                var compData = reader.ReadToEnd();
+                var xmlData = compData.Decompress();
+                return xmlData.Deserialize<T>();
+            }
+        }
+
+        public static void Export<T>(this T obj, string path) where T : class
         {
             var executionPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var modelPath = Path.Combine(executionPath, lda.Parameter.ModelPath);
+            var modelPath = Path.Combine(executionPath, path);
             if (!Directory.Exists(modelPath)) Directory.CreateDirectory(modelPath);
 
-            // export Parameters
-            using (var writer = new StreamWriter(Path.Combine(modelPath, "Parameters.dat")))
+            using (var writer = new StreamWriter(Path.Combine(modelPath, typeof(T).Name + ".bin")))
             {
-                writer.WriteLine(lda.Parameter.Alpha);
-                writer.WriteLine(lda.Parameter.Beta);
-                writer.WriteLine(lda.Parameter.TopicCount);
-                writer.WriteLine(lda.Parameter.CurrentIterationStep);
-                writer.WriteLine(lda.Parameter.TotalIterationStep);
-                writer.WriteLine(lda.Parameter.VocabularyCount);
-                writer.WriteLine(lda.Parameter.DocumentCount);
+                var xmlData = obj.Serialize();
+                var compData = xmlData.Compress();
+                writer.WriteLine(compData);
             }
+        }
 
-            // export Vocabulary
-            using (var writer = new StreamWriter(Path.Combine(modelPath, "Voca.dat")))
+        public static void ExportVoca(string path)
+        {
+            var executionPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var modelPath = Path.Combine(executionPath, path);
+            if (!Directory.Exists(modelPath)) Directory.CreateDirectory(modelPath);
+
+            using (var writer = new StreamWriter(Path.Combine(modelPath, typeof(WordManager).Name + ".bin")))
             {
-                foreach(var wordIdPair in WordManager.WordIterator())
-                {
-                    writer.WriteLine("{0}:{1}", wordIdPair.Key, wordIdPair.Value);
-                }
+                foreach (var wordItem in WordManager.WordIterator())
+                    writer.WriteLine("{0}:{1}", wordItem.Value, wordItem.Key);
             }
+        }
 
-            // export Theta
-            using (var writer = new StreamWriter(Path.Combine(modelPath, "Theta.dat")))
-            {
-                foreach (var values in lda.LDAModel.Theta)
-                {
-                    writer.WriteLine(string.Join(",", values));
-                }
-            }
+        public static void ImportVoca(string path)
+        {
+            var executionPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var modelPath = Path.Combine(executionPath, path);
 
-            // export Phi
-            using (var writer = new StreamWriter(Path.Combine(modelPath, "Phi.dat")))
+            WordManager.Clear();
+            using (var reader = new StreamReader(Path.Combine(modelPath, typeof(WordManager).Name + ".bin")))
             {
-                foreach (var values in lda.LDAModel.Phi)
+                var line = "";
+                while ((line = reader.ReadLine()) != null)
                 {
-                    writer.WriteLine(string.Join(",", values));
+                    var idx = line.IndexOf(':');
+                    var word = line.Substring(idx + 1);
+                    WordManager.ToWordId(word);
                 }
             }
         }

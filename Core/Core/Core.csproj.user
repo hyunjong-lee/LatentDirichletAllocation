@@ -4,9 +4,9 @@
     <ProjectView>ProjectFiles</ProjectView>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <StartArguments>Dataset\newsdata.csv 0.1 0.1 10 100 Model</StartArguments>
+    <StartArguments>Dataset\newsdata.csv 0.1 0.1 10 1 Model</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <StartArguments>Dataset\newsdata.csv 0.1 0.1 10 10 Model</StartArguments>
+    <StartArguments>Dataset\newsdata.csv 0.2 0.03 10 300 Model</StartArguments>
   </PropertyGroup>
 </Project>

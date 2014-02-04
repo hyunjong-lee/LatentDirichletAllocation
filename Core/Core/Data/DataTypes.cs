@@ -46,25 +46,35 @@ namespace Core.Data
             foreach (var elem in WordIdMap)
                 yield return elem;
         }
+
+        public static void Clear()
+        {
+            lock (WordIdMap)
+            {
+                WordIdMap.Clear();
+                IdWordMap.Clear();
+            }
+        }
     }
 
     public class Document
     {
         public readonly string Id;
-        public readonly Dictionary<int, int> BagOfWords = new Dictionary<int,int>();
         public readonly List<int> WordSequence = new List<int>();
         public int Count { get { return WordSequence.Count; } }
+
+        private Document()
+        {
+        }
 
         public Document(string id, string content, params char[] delimiter)
         {
             Id = id;
             foreach (var word in content.ToLower().Split(delimiter))
             {
-                var wordId = word.ToWordId();
-                if (!BagOfWords.ContainsKey(wordId))
-                    BagOfWords.Add(wordId, 0);
-                BagOfWords[wordId]++;
+                if (word.Trim().Length == 0) continue;
 
+                var wordId = word.ToWordId();
                 WordSequence.Add(wordId);
             }
         }

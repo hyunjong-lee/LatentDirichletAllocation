@@ -41,7 +41,11 @@ namespace Core.Model
 
         public List<List<double>> Theta; // topic-document distribution: | Documents | * | Topic Count |
         public List<List<double>> Phi; // topic-vocabulary distribution: | Topic Count | * | Vocabulary |
-       
+
+        private LDAModel()
+        {
+        }
+
         public LDAModel(Parameter parameter)
         {
             Parameter = parameter;
@@ -97,10 +101,16 @@ namespace Core.Model
             Initialize();
 
             LogHelper.Log("Start inference {0}", _parameter.TotalIterationStep);
+            var inferTime = DateTime.Now;
             foreach (var step in Enumerable.Range(0, _parameter.TotalIterationStep))
             {
                 LogHelper.Log("Iteration step {0}", step);
                 Inference(step);
+
+                var curInferTime = DateTime.Now;
+                var elapsed = (curInferTime - inferTime).TotalMilliseconds / (step + 1);
+                var estimatedInferTime = inferTime.AddMilliseconds(elapsed * _parameter.TotalIterationStep);
+                LogHelper.Log("Estimated Finish Time: {0}", estimatedInferTime.ToString("HH:mm:ss"));
             }
             LogHelper.Log("Finish inference {0}", _parameter.TotalIterationStep);
 
@@ -110,8 +120,14 @@ namespace Core.Model
             LogHelper.Log("compute phi");
             _ldaModel.ComputePhi(this);
 
+            LogHelper.Log("export parameters to {0}", _parameter.ModelPath);
+            _parameter.Export(_parameter.ModelPath);
+            
             LogHelper.Log("export LDA model to {0}", _parameter.ModelPath);
-            this.Export();
+            _ldaModel.Export(_parameter.ModelPath);
+            
+            LogHelper.Log("export vocabulary to {0}", _parameter.ModelPath);
+            ModelHelper.ExportVoca(_parameter.ModelPath);
         }
 
         private void Initialize()
@@ -169,13 +185,16 @@ namespace Core.Model
                 topicDist[topicId] =
                     (_ldaModel.NW[wordId][topicId] + beta) / (_ldaModel.NWCount[topicId] + VBeta) *
                     (_ldaModel.ND[documentIdx][topicId] + alpha) / (NDCount + KAlpha);
+
+                // cumul topic dist
+                if (topicId > 0)
+                    topicDist[topicId] += topicDist[topicId - 1];
             }
 
             topic = topicCount - 1;
             var sample = (new Random(DateTime.Now.Millisecond)).NextDouble() * topicDist.Last();
-            foreach (var topicId in Enumerable.Range(1, topicCount - 1))
+            foreach (var topicId in Enumerable.Range(0, topicCount - 1))
             {
-                topicDist[topicId] += topicDist[topicId - 1];
                 if (topicDist[topicId] > sample)
                 {
                     topic = topicId;
