@@ -30,6 +30,9 @@ namespace Core
                 parameter.TotalIterationStep = int.Parse(args[4]);
                 parameter.ModelPath = args[5];
 
+                // parameter adjustment by topic count
+                parameter.Alpha /= parameter.TopicCount;
+
                 parameter.LoadCorpus();
                 var lda = new LDA(parameter);
                 lda.Inference();

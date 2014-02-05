@@ -13,9 +13,9 @@ namespace Core.Helper
 {
     public static class ModelHelper
     {
-        public static T Import<T>(this string modelPath) where T : class
+        public static T Import<T>(this string path) where T : class
         {
-            using (var reader = new StreamReader(Path.Combine(modelPath, typeof(T).Name + ".bin")))
+            using (var reader = new StreamReader(Path.Combine(path, typeof(T).Name + ".bin")))
             {
                 var compData = reader.ReadToEnd();
                 var xmlData = compData.Decompress();
@@ -25,11 +25,9 @@ namespace Core.Helper
 
         public static void Export<T>(this T obj, string path) where T : class
         {
-            var executionPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var modelPath = Path.Combine(executionPath, path);
-            if (!Directory.Exists(modelPath)) Directory.CreateDirectory(modelPath);
+            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 
-            using (var writer = new StreamWriter(Path.Combine(modelPath, typeof(T).Name + ".bin")))
+            using (var writer = new StreamWriter(Path.Combine(path, typeof(T).Name + ".bin")))
             {
                 var xmlData = obj.Serialize();
                 var compData = xmlData.Compress();
@@ -39,11 +37,9 @@ namespace Core.Helper
 
         public static void ExportVoca(string path)
         {
-            var executionPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var modelPath = Path.Combine(executionPath, path);
-            if (!Directory.Exists(modelPath)) Directory.CreateDirectory(modelPath);
+            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 
-            using (var writer = new StreamWriter(Path.Combine(modelPath, typeof(WordManager).Name + ".bin")))
+            using (var writer = new StreamWriter(Path.Combine(path, typeof(WordManager).Name + ".bin")))
             {
                 foreach (var wordItem in WordManager.WordIterator())
                     writer.WriteLine("{0}:{1}", wordItem.Value, wordItem.Key);
@@ -52,11 +48,8 @@ namespace Core.Helper
 
         public static void ImportVoca(string path)
         {
-            var executionPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var modelPath = Path.Combine(executionPath, path);
-
             WordManager.Clear();
-            using (var reader = new StreamReader(Path.Combine(modelPath, typeof(WordManager).Name + ".bin")))
+            using (var reader = new StreamReader(Path.Combine(path, typeof(WordManager).Name + ".bin")))
             {
                 var line = "";
                 while ((line = reader.ReadLine()) != null)
