@@ -45,7 +45,7 @@ namespace Viewer
                 topicTable.Columns.Add(string.Format("Prob {0}", topicId));
             }
 
-            foreach (var top in Enumerable.Range(0, 100))
+            foreach (var top in Enumerable.Range(0, 101))
             {
                 var row = topicTable.NewRow();
                 topicTable.Rows.Add(row);
@@ -61,7 +61,9 @@ namespace Viewer
                     .OrderByDescending(e => e.Prob)
                     .ToList();
 
-                foreach (var top in Enumerable.Range(0, 100))
+                topicTable.Rows[0][topicCol] = topicCol;
+                topicTable.Rows[0][topicCol] = wordDist.Sum(e => e.Prob);
+                foreach (var top in Enumerable.Range(1, 100))
                 {
                     var word = WordManager.ToWord(wordDist[top].WordId);
                     var prob = wordDist[top].Prob;

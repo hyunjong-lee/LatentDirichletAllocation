@@ -31,7 +31,7 @@ namespace Core
                 parameter.ModelPath = args[5];
 
                 // parameter adjustment by topic count
-                parameter.Alpha /= parameter.TopicCount;
+                //parameter.Alpha /= parameter.TopicCount;
 
                 parameter.LoadCorpus();
                 var lda = new LDA(parameter);
@@ -41,6 +41,8 @@ namespace Core
             {
                 LogHelper.Log(ex);
             }
+
+            Console.ReadKey();
         }
     }
 }

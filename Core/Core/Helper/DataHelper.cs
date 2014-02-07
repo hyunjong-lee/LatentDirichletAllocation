@@ -13,10 +13,10 @@ namespace Core.Helper
     {
         public static void LoadCorpus(this Parameter parameter)
         {
-            var corpus = File.ReadAllLines(parameter.CorpusPath).Skip(1).Select(e => e.Split(','));
+            var corpus = File.ReadAllLines(parameter.CorpusPath).Skip(1);
             foreach (var rawData in corpus)
             {
-                var document = new Document(rawData[0], rawData.Last());
+                var document = new Document("TEST", rawData);
                 if (document.Count == 0) continue;
 
                 parameter.DocumentList.Add(document);

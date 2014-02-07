@@ -4,9 +4,15 @@
     <ProjectView>ProjectFiles</ProjectView>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <StartArguments>Dataset\newsdata.csv 50 0.01 10 100 D:\Model</StartArguments>
+    <StartArguments>Dataset\newsdata.csv 0.5 0.1 100 1000 D:\Model</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <StartArguments>Dataset\newsdata.csv 50 0.01 10 100 D:\Model</StartArguments>
+    <StartArguments>Dataset\newsdata.csv 0.5 0.1 100 1 D:\Model</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <StartArguments>C:\Users\hyunjong.lee\Desktop\GibbsLDA++-0.2\models\casestudy\trndocs.dat 50 0.01 10 100 D:\Model</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <StartArguments>C:\Users\hyunjong.lee\Desktop\GibbsLDA++-0.2\models\casestudy\trndocs.dat 0.5 0.1 10 10 D:\Model</StartArguments>
   </PropertyGroup>
 </Project>
